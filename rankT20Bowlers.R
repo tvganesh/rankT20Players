@@ -82,27 +82,19 @@ rankT20Bowlers <- function() {
             )
             if(exists("l")){
             
-               m <- select(l,bowler,wickets,economyRate)
-               o <-rbind(o,m)
+                l1 <- l %>% group_by(bowler,wickets,economyRate) %>%  distinct(date)
+                l2 <-summarise(group_by(l1,bowler),matches=n(),meanWickets=mean(wickets),
+                               meanER=mean(economyRate))
+                
+                o <-rbind(o,l2)
             }
             
         }
     }
-    print(dim(o))
-    bowlers <- unique(o$bowler)
-    print(getwd())
-    u <- NULL
-    s <- data.frame(bowler=character(0),matches=numeric(0),meanWickets=numeric(0),meanER=numeric(0))
-    for (x in 1:length(bowlers)){
-        m <- filter(o,bowler==bowlers[x])
-        m <- mutate(m,matches=n(),meanWickets=mean(wickets),meanER=mean(economyRate))
-        m <- select(m,bowler,matches,meanWickets,meanER)
-        s <- m[1,]
-        u <- rbind(u,s)
-    }
+    
     
     # Select only players who have played 60 matches or more
-    q <- filter(u,matches >= 30)
+    q <- filter(o,matches >= 30)
     
     T20BowlersRank <- arrange(q,desc(meanWickets),desc(meanER))
     T20BowlersRank
